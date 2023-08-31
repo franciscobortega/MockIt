@@ -1,31 +1,72 @@
-import tkinter as tk
 from tkinter import *
+import cv2
+from PIL import Image, ImageTk
+
+# Define a video capture object
+vid = cv2.VideoCapture(0)
+
+# Declare the width and height in variables
+width, height = 800, 600
+
+# Set the width and height
+vid.set(cv2.CAP_PROP_FRAME_WIDTH, width)
+vid.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
+
+# Create a GUI app
+app = Tk()
+# app.geometry("600x600")
+
+# Bind the app with Escape keyboard to
+# quit app whenever pressed
+app.bind('<Escape>', lambda e: app.quit())
+
+# Create a label and display it on app
+label_widget = Label(app)
+label_widget.grid(column=1, row=0)
 
 
-class MockItApp:
-    def __init__(self, root):
-        self.root = root
-        self.root.title("MockIt Interview Training App")
-        self.left_frame = Frame(root, width=400, height=400)
-        self.left_frame.grid(row=0, column=0, padx=10, pady=5)
-        self.root.mainloop()
-
-        self.create_ui()
-
-    def create_ui(self):
-        # Create Frame widget
-        pass
-
-    def start_session(self):
-        # Start an interview session
-        pass
-
-    def save_video(self):
-        # Save recorded video
-        pass
+# Create a function to open camera and
+# display it in the label_widget on app
 
 
-if __name__ == "__main__":
-    root = tk.Tk()
-    app = MockItApp(root)
-    root.mainloop()
+def open_camera():
+    # Capture the video frame by frame
+    _, frame = vid.read()
+
+    # Convert image from one color space to other
+    opencv_image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
+
+    # Capture the latest frame and transform to image
+    captured_image = Image.fromarray(opencv_image)
+
+    # Convert captured image to photoimage
+    photo_image = ImageTk.PhotoImage(image=captured_image)
+
+    # Displaying photoimage in the label
+    label_widget.photo_image = photo_image
+
+    # Configure image in the label
+    label_widget.configure(image=photo_image)
+
+    # Repeat the same process after every 10 seconds
+    label_widget.after(10, open_camera)
+
+
+def stop_camera():
+    if vid:
+        vid.release()
+
+    cv2.destroyAllWindows()
+
+
+# Create a button to open the camera in GUI app
+camera_button = Button(app, text="Open Camera", command=open_camera)
+camera_button.grid(column=0, row=1)
+
+play_button = Button(app, text="Play")
+play_button.grid(column=1, row=1)
+stop_button = Button(app, text="Stop", command=stop_camera)
+stop_button.grid(column=2, row=1)
+
+# Create an infinite loop for displaying app on screen
+app.mainloop()
